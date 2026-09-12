@@ -130,9 +130,8 @@ claims_dashboard = snowflake.Streamlit("claims-streamlit-app",
     name="STREAMLIT_CLAIMS_DASHBOARD",
     stage=streamlit_stage.fully_qualified_name,
     main_file="app.py",
-    query_warehouse=dataops_warehouse.name,
+    query_warehouse="COMPUTE_WH",
     comment="Interactive executive dashboard for claims analysis."
 )
-
 # Export the database name to the terminal upon completion
 pulumi.export("database_name", lumina_db.name)
