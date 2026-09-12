@@ -115,13 +115,22 @@ ingestion_task = snowflake.Task("claims-ingestion-task",
     started=True
 )
 
-# 11. Deploy Streamlit App natively in Snowflake
+# 11. Create an Internal Stage for Streamlit code files
+streamlit_stage = snowflake.StageInternal("streamlit-stage",
+    database=lumina_db.name,
+    schema=analytics_schema.name,
+    name="STREAMLIT_STAGE",
+    comment="Internal stage for holding Streamlit app files."
+)
+
+# 12. Deploy Streamlit App natively using the Stage and Query Warehouse
 claims_dashboard = snowflake.Streamlit("claims-streamlit-app",
     database=lumina_db.name,
     schema=analytics_schema.name,
     name="STREAMLIT_CLAIMS_DASHBOARD",
-    filename="./streamlit_app/app.py",
+    stage=streamlit_stage.fully_qualified_name,
     main_file="app.py",
+    query_warehouse=dataops_warehouse.name,
     comment="Interactive executive dashboard for claims analysis."
 )
 
