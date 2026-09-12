@@ -21,16 +21,12 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v2
-
       - name: Pulumi Preview (Pull Request)
         if: github.event_name == 'pull_request'
         uses: pulumi/actions@v5
         with:
           command: preview
           stack-name: dev
-          python-package-manager: uv
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
 
@@ -40,6 +36,5 @@ jobs:
         with:
           command: up
           stack-name: dev
-          python-package-manager: uv
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
