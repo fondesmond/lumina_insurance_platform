@@ -1,0 +1,49 @@
+name: Pulumi Infrastructure CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Preview or Deploy Infrastructure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v2
+
+      - name: Install Dependencies
+        run: |
+          uv venv venv
+          source venv/bin/activate
+          uv pip install -r requirements.txt
+
+      - name: Pulumi Preview (Pull Request)
+        if: github.event_name == 'pull_request'
+        uses: pulumi/actions@v5
+        with:
+          command: preview
+          stack-name: dev
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+
+      - name: Pulumi Up (Push to Main)
+        if: github.event_name == 'push'
+        uses: pulumi/actions@v5
+        with:
+          command: up
+          stack-name: dev
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}

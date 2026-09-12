@@ -1,0 +1,11 @@
+# Python and uv environments
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Mock Data
+mock_onelake/
+
+# Pulumi local state (if any)
+.pulumi/

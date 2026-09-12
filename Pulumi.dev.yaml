@@ -1,0 +1,1 @@
+{config: {'snowflake:organizationName': HMPFCZB, 'snowflake:accountName': AG75387, 'snowflake:user': fondesmond, 'snowflake:role': ACCOUNTADMIN, 'snowflake:password': {secure: AAABAHq0wb27hwbVOM/Sld73i2xb5ke2mZiL+yTzpMKw0JQ6a09Qsqwt46mAPTs=}, 'snowflake:previewFeaturesEnabled': [snowflake_table_resource, snowflake_table_constraint_resource]}}
