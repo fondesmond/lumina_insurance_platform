@@ -120,7 +120,6 @@ claims_dashboard = snowflake.Streamlit("claims-streamlit-app",
     database=lumina_db.name,
     schema=analytics_schema.name,
     name="STREAMLIT_CLAIMS_DASHBOARD",
-    warehouse=dataops_warehouse.name,
     filename="./streamlit_app/app.py",
     main_file="app.py",
     comment="Interactive executive dashboard for claims analysis."
