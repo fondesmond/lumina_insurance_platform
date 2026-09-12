@@ -29,7 +29,8 @@ jobs:
           uv venv --seed venv
           source venv/bin/activate
           uv pip install -r requirements.txt
-
+          echo "$GITHUB_WORKSPACE/venv/bin" >> $GITHUB_PATH
+          
       - name: Pulumi Preview (Pull Request)
         if: github.event_name == 'pull_request'
         uses: pulumi/actions@v5
