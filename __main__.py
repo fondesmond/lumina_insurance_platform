@@ -56,7 +56,9 @@ fact_claim_table = snowflake.Table("fact-claim-table",
         snowflake.TableColumnArgs(name="CLAIM_ID", type="VARCHAR(50)"),
         snowflake.TableColumnArgs(name="POLICY_ID", type="VARCHAR(50)"),
         snowflake.TableColumnArgs(name="CLAIM_AMOUNT", type="NUMBER(14,2)"),
-        snowflake.TableColumnArgs(name="STATUS", type="VARCHAR(20)")
+        snowflake.TableColumnArgs(name="STATUS", type="VARCHAR(20)"),
+        # Evolved Schema Column
+        snowflake.TableColumnArgs(name="RISK_SCORE", type="NUMBER(38,0)")
     ]
 )
 
@@ -83,5 +85,35 @@ claims_summary_view = snowflake.View("claims-summary-view",
         GROUP BY STATUS
     """
 )
+
+# 9. Create a dedicated Warehouse for automated tasks
+dataops_warehouse = snowflake.Warehouse("dataops-warehouse",
+    name="LUMINA_DATAOPS_WH",
+    warehouse_size="X-SMALL",
+    auto_suspend=60,
+    auto_resume=True,
+    comment="Dedicated compute for automated ingestion tasks."
+)
+
+# 10. Create the Automated Ingestion Task
+ingestion_task = snowflake.Task("claims-ingestion-task",
+    database=lumina_db.name,
+    schema=core_star_schema.name,
+    name="TASK_INGEST_CLAIMS",
+    warehouse=dataops_warehouse.name,
+    schedule=snowflake.TaskScheduleArgs(
+        minutes=60
+    ),
+    sql_statement="""
+        COPY INTO LUMINA_PROD.CORE_STAR.FACT_CLAIM (CLAIM_ID, POLICY_ID, CLAIM_AMOUNT, STATUS, RISK_SCORE) 
+        FROM (
+            SELECT $1:CLAIM_ID::STRING, $1:POLICY_ID::STRING, $1:CLAIM_AMOUNT::FLOAT, $1:STATUS::STRING, $1:RISK_SCORE::NUMBER 
+            FROM @LUMINA_PROD.RAW_DELTA.MOCK_ONELAKE_STAGE/claims_delta/ 
+            (FILE_FORMAT => 'LUMINA_PROD.RAW_DELTA.FORMAT_PARQUET', PATTERN => '.*parquet')
+        )
+    """,
+    started=True
+)
+
 # Export the database name to the terminal upon completion
 pulumi.export("database_name", lumina_db.name)
