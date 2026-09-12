@@ -115,5 +115,16 @@ ingestion_task = snowflake.Task("claims-ingestion-task",
     started=True
 )
 
+# 11. Deploy Streamlit App natively in Snowflake
+claims_dashboard = snowflake.Streamlit("claims-streamlit-app",
+    database=lumina_db.name,
+    schema=analytics_schema.name,
+    name="STREAMLIT_CLAIMS_DASHBOARD",
+    warehouse=dataops_warehouse.name,
+    filename="./streamlit_app/app.py",
+    main_file="app.py",
+    comment="Interactive executive dashboard for claims analysis."
+)
+
 # Export the database name to the terminal upon completion
 pulumi.export("database_name", lumina_db.name)
