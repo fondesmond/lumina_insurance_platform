@@ -21,6 +21,7 @@ jobs:
         with:
           python-version: '3.11'
 
+      # Pulumi Infrastructure Steps
       - name: Pulumi Preview (Pull Request)
         if: github.event_name == 'pull_request'
         uses: pulumi/actions@v5
@@ -38,3 +39,42 @@ jobs:
           stack-name: dev
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+
+      # dbt Data Transformation Steps (Runs only after successful deploy to main)
+      - name: Install dbt
+        if: github.event_name == 'push'
+        run: pip install dbt-snowflake==1.8.3
+
+      - name: Configure dbt Profile
+        if: github.event_name == 'push'
+        run: |
+          mkdir -p ~/.dbt
+          cat << EOF > ~/.dbt/profiles.yml
+          my_dbt_project:
+            target: prod
+            outputs:
+              prod:
+                type: snowflake
+                account: "${{ secrets.SF_ACCOUNT }}"
+                user: "${{ secrets.SF_USER }}"
+                password: "${{ secrets.SF_PASSWORD }}"
+                role: "ACCOUNTADMIN"
+                warehouse: "SNOWFLAKE_LEARNING_WH"
+                database: "DE_TUTORIAL"
+                schema: "RAW"
+                threads: 4
+          EOF
+          chmod 0600 ~/.dbt/profiles.yml
+
+      - name: Verify dbt Connection
+        if: github.event_name == 'push'
+        run: |
+          cd my_dbt_project
+          dbt debug --target prod
+
+      - name: Run dbt Transformations
+        if: github.event_name == 'push'
+        run: |
+          cd my_dbt_project
+          dbt deps
+          dbt build --target prod
